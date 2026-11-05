@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cámara del Tesoro - Desafío Matemático</title>
+<style>
+:root{--bg:#080d20;--panel:#171b3d;--panel2:#29245b;--cyan:#35d9ff;--purple:#a78bfa;--gold:#ffd76a;--text:#f6f4ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#202b67 0%,#0c1230 42%,#050817 100%);color:var(--text);font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:22px}
+.game{width:min(900px,100%);background:rgba(13,18,43,.96);border:1px solid #44417f;border-radius:22px;overflow:hidden;box-shadow:0 0 45px #302a7a66}
+header{text-align:center;padding:24px 18px 12px}header .tag{color:var(--cyan);font-size:.78rem;letter-spacing:3px;font-weight:bold}h1{margin:9px 0;color:#fff;font-size:clamp(1.6rem,4vw,2.5rem);text-shadow:0 0 18px #8d7bff}header p{color:#c7c9ed;margin:8px 0}
+.scene{margin:10px 18px 18px;min-height:165px;border-radius:16px;border:1px solid #47478b;background:linear-gradient(135deg,#101a3e,#20215b 55%,#301c61);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.scene:before,.scene:after{content:"";position:absolute;width:220px;height:220px;border:1px solid #39dfff33;border-radius:50%;box-shadow:0 0 35px #3adfff22;top:-120px;left:-60px}
+.scene:after{left:auto;right:-70px;top:auto;bottom:-150px;border-color:#bd80ff55}
+.vault{font-size:clamp(4rem,12vw,7rem);filter:drop-shadow(0 0 18px #35d9ff);z-index:1}
+.content{padding:0 22px 22px}.stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#cbd0ff;font-size:.9rem;margin-bottom:12px}
+.track{height:9px;background:#30345e;border-radius:99px;overflow:hidden;margin-bottom:20px}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--gold));transition:width .3s}
+.card{background:linear-gradient(145deg,#211f50,#171a3c);border:1px solid #514b91;border-radius:16px;padding:22px}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:bold;letter-spacing:2px}.question{font-size:clamp(1.25rem,3vw,1.8rem);line-height:1.35;margin:12px 0 20px}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+button{font:inherit;cursor:pointer;border:1px solid #6562a8;border-radius:12px;padding:14px 12px;color:white;background:#302d68;transition:.15s}
+button:hover:not(:disabled){transform:translateY(-2px);border-color:var(--cyan);background:#3b397e;box-shadow:0 0 16px #35d9ff33}
+button:disabled{cursor:default;opacity:.8}.answer{font-weight:bold;font-size:1.05rem}
+.feedback{margin-top:16px;min-height:48px;padding:13px 15px;border-radius:12px;background:#111832;color:#dce2ff;border:1px solid #353d70;line-height:1.4}
+.feedback.good{border-color:#31c98a;color:#a8ffd9}.feedback.bad{border-color:#ff9b71;color:#ffd1bd}
+.next{display:none;margin-top:14px;width:100%;background:linear-gradient(90deg,#267fbd,#6850b7);border:0;font-weight:bold}
+.footer{text-align:center;color:#969dcf;font-size:.78rem;padding:0 15px 18px}
+.result{text-align:center}.result .treasure{font-size:6rem;filter:drop-shadow(0 0 22px #ffd76a)}.result h2{color:var(--gold);font-size:2rem}.result p{line-height:1.6;color:#d9dcff}.restart{margin-top:12px;background:linear-gradient(90deg,#8863d9,#247eb6);font-weight:bold;border:0}
+@media(max-width:520px){body{padding:10px}.content{padding:0 13px 16px}.scene{margin:8px 12px 14px}.card{padding:17px}.answers{grid-template-columns:1fr}header{padding-top:20px}}
+</style>
+</head>
+<body>
+<main class="game">
+<header><div class="tag">MISIÓN MATEMÁTICA · NIVEL ESPECIAL</div><h1>🏆 CÁMARA DEL TESORO</h1><p>Supera los 10 mecanismos y abre el cofre secreto.</p></header>
+<div class="scene"><div class="vault" id="vault">🔐</div></div>
+<section class="content">
+<div class="stats"><span id="progressText">Mecanismo 1 de 10</span><span id="scoreText">⭐ Puntos: 0</span><span id="livesText">Intentos: 0</span></div>
+<div class="track"><div class="fill" id="fill"></div></div>
+<div class="card" id="card">
+<div class="kicker" id="kicker">PANEL DE ENERGÍA</div>
+<div class="question" id="question">Cargando desafío...</div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback" aria-live="polite">Elige una respuesta para activar el mecanismo.</div>
+<button class="next" id="next">SIGUIENTE MECANISMO →</button>
+</div>
+</section>
+<div class="footer">Piensa, calcula y desbloquea. ¡Puedes volver a intentarlo si te equivocas!</div>
+</main>
+<script>
+const qs=[
+{room:"PANEL DE ENERGÍA",q:"¿Cuánto es 36 ÷ 4 + 7 × 2?",a:["23","32","20","18"],c:0,why:"Primero división y multiplicación: 36 ÷ 4 = 9 y 7 × 2 = 14. Luego 9 + 14 = 23."},
+{room:"PUERTA DE LOS NÚMEROS",q:"Un objeto cuesta 240 monedas y tiene un descuento del 25%. ¿Cuánto se descuenta?",a:["40 monedas","50 monedas","60 monedas","80 monedas"],c:2,why:"El 25% es la cuarta parte: 240 ÷ 4 = 60 monedas."},
+{room:"SECUENCIA SECRETA",q:"¿Qué número continúa la secuencia? 5, 10, 20, 40, ...",a:["45","60","70","80"],c:3,why:"Cada término se obtiene multiplicando el anterior por 2: 40 × 2 = 80."},
+{room:"LABORATORIO",q:"Si 3x + 5 = 20, ¿cuánto vale x?",a:["3","5","7","15"],c:1,why:"Restamos 5 a ambos lados: 3x = 15. Dividimos entre 3: x = 5."},
+{room:"CÓDIGO DE GEOMETRÍA",q:"Un rectángulo mide 8 cm de largo y 5 cm de ancho. ¿Cuál es su área?",a:["13 cm²","26 cm²","40 cm²","80 cm²"],c:2,why:"El área del rectángulo es largo × ancho: 8 × 5 = 40 cm²."},
+{room:"SALA DE FRACCIONES",q:"¿Cuál es el resultado de 1/2 + 1/4?",a:["2/6","3/4","1/8","2/4"],c:1,why:"1/2 equivale a 2/4. Entonces 2/4 + 1/4 = 3/4."},
+{room:"REACTOR CENTRAL",q:"Un número negativo se multiplica por otro número negativo. ¿El resultado es...?",a:["Negativo","Cero siempre","Positivo","No se puede saber"],c:2,why:"El producto de dos números negativos es positivo."},
+{room:"PUZZLE DE POTENCIAS",q:"¿Cuánto vale 2⁴ + 3²?",a:["17","20","25","49"],c:2,why:"2⁴ = 16 y 3² = 9. La suma es 25."},
+{room:"BALANZA DEL TESORO",q:"Si 5 cuadernos cuestan 150 monedas, ¿cuánto cuestan 2 al mismo precio?",a:["30 monedas","50 monedas","60 monedas","75 monedas"],c:2,why:"Cada cuaderno cuesta 150 ÷ 5 = 30. Dos cuestan 30 × 2 = 60."},
+{room:"CÓDIGO FINAL",q:"Un cofre tiene 120 gemas. Se reparten por igual entre 6 exploradores y cada uno entrega 3. ¿Cuántas gemas conserva cada uno?",a:["15","17","20","23"],c:1,why:"120 ÷ 6 = 20. Luego 20 − 3 = 17 gemas."}
+];
+let i=0,score=0,tries=0,locked=false;
+const $=id=>document.getElementById(id);
+function render(){
+ locked=false;$("progressText").textContent=`Mecanismo ${i+1} de 10`;$("scoreText").textContent=`⭐ Puntos: ${score}`;$("livesText").textContent=`Intentos: ${tries}`;$("fill").style.width=`${i/10*100}%`;$("vault").textContent=["🔐","🚪","🔢","🧪","📐","🧩","⚡","🔮","⚖️","🗝️"][i];
+ $("kicker").textContent=qs[i].room;$("question").textContent=qs[i].q;$("answers").innerHTML="";$("feedback").className="feedback";$("feedback").textContent="Elige una respuesta para activar el mecanismo.";$("next").style.display="none";
+ qs[i].a.forEach((v,n)=>{let b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+n)+". "+v;b.onclick=()=>choose(n);$("answers").appendChild(b)});
+}
+function choose(n){
+ if(locked)return;tries++;$("livesText").textContent=`Intentos: ${tries}`;
+ const correct=n===qs[i].c;const buttons=[...$("answers").children];buttons.forEach(b=>b.disabled=true);
+ if(correct){score+=10;locked=true;$("feedback").className="feedback good";$("feedback").textContent="✓ ¡Mecanismo desbloqueado! "+qs[i].why;$("next").style.display="block";$("next").textContent=i===9?"ABRIR EL COFRE 🏆":"SIGUIENTE MECANISMO →";$("scoreText").textContent=`⭐ Puntos: ${score}`;buttons[n].style.borderColor="#31c98a";buttons[n].style.background="#155b4c";}
+ else{$("feedback").className="feedback bad";$("feedback").textContent="✕ Esa no es la respuesta. Prueba otra vez: el mecanismo sigue bloqueado.";$("answers").querySelectorAll("button").forEach((b,j)=>{b.disabled=j===n});buttons[n].style.borderColor="#ff9b71";}
+}
+$("next").onclick=()=>{if(i<9){i++;render()}else{finish()}};
+function finish(){
+ $("fill").style.width="100%";$("progressText").textContent="Misión completada";$("vault").textContent="🏆";$("card").innerHTML=`<div class="result"><div class="treasure">💎</div><h2>¡TESORO DESBLOQUEADO!</h2><p>¡Lo lograste! Superaste los 10 mecanismos de la Cámara del Tesoro.<br><strong>Tu puntuación: ${score} de 100 puntos</strong><br>Respuestas correctas: ${score/10} de 10<br>Intentos realizados: ${tries}</p><p>${score===100?"¡Perfecto! Eres un maestro de los desafíos matemáticos.":score>=70?"¡Muy buen trabajo, explorador!": "¡Misión cumplida! Sigue practicando y cada vez lo harás mejor."}</p><button class="restart" onclick="location.reload()">JUGAR OTRA VEZ ↻</button></div>`;
+}
+render();
+</script>
+</body>
+</html>
